@@ -17,5 +17,6 @@ public final class ClientModEvents {
         for (HokageEntity.Kind kind : HokageEntity.Kind.values()) {
             event.registerEntityRenderer(ModRegistry.HOKAGES.get(kind).get(), HokageRenderer::new);
         }
+        event.registerEntityRenderer(ModRegistry.CORPSE.get(), CorpseRenderer::new);
     }
 }

@@ -30,3 +30,6 @@ Addon para o Narutoto: jutsus proibidos (Shiki Fujin e Edo Tensei), Hokages 1, 2
     versionRange="[0,)"
     ordering="AFTER"
     side="BOTH"
+
+[[accessTransformers]]
+    file="META-INF/accesstransformer.cfg"

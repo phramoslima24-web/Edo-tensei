@@ -1,7 +1,7 @@
 package com.edotensei.block;
 
+import com.edotensei.EdoTargets;
 import com.edotensei.ModRegistry;
-import com.edotensei.entity.HokageEntity;
 import com.edotensei.item.BloodSyringeItem;
 import com.edotensei.jutsu.Jutsus;
 import javax.annotation.Nullable;
@@ -18,7 +18,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -108,8 +107,8 @@ public class EdoTenseiScrollBlock extends BaseEntityBlock {
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moving) {
         if (!state.is(newState.getBlock())) {
             BlockEntity be = level.getBlockEntity(pos);
-            if (!level.isClientSide && be instanceof EdoTenseiScrollBlockEntity scroll && !scroll.getHokage().isEmpty()) {
-                Block.popResource(level, pos, BloodSyringeItem.create(scroll.getHokage()));
+            if (!level.isClientSide && be instanceof EdoTenseiScrollBlockEntity scroll && !scroll.getEntityId().isEmpty()) {
+                Block.popResource(level, pos, BloodSyringeItem.create(scroll.getEntityId()));
             }
         }
         super.onRemove(state, level, pos, newState, moving);
@@ -124,17 +123,17 @@ public class EdoTenseiScrollBlock extends BaseEntityBlock {
 
         // Colocar a seringa com sangue dentro do pergaminho
         if (held.is(ModRegistry.BLOOD_SYRINGE.get())) {
-            if (!scroll.getHokage().isEmpty()) {
+            if (!scroll.getEntityId().isEmpty()) {
                 player.displayClientMessage(Component.translatable("message.edotensei.scroll_full"), true);
                 return InteractionResult.CONSUME;
             }
-            String id = BloodSyringeItem.getHokage(held);
+            String id = BloodSyringeItem.getEntity(held);
             if (id.isEmpty()) return InteractionResult.CONSUME;
-            scroll.setHokage(id);
+            scroll.setEntityId(id);
             if (!player.getAbilities().instabuild) held.shrink(1);
             level.playSound(null, pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
             player.displayClientMessage(Component.translatable("message.edotensei.blood_inserted",
-                    Component.translatable("entity.edotensei." + id)), true);
+                    EdoTargets.nameOf(id)), true);
             return InteractionResult.CONSUME;
         }
 
@@ -145,12 +144,12 @@ public class EdoTenseiScrollBlock extends BaseEntityBlock {
         }
 
         // Status
-        String id = scroll.getHokage();
+        String id = scroll.getEntityId();
         if (id.isEmpty()) {
             player.displayClientMessage(Component.translatable("message.edotensei.scroll_empty"), true);
         } else {
             player.displayClientMessage(Component.translatable("message.edotensei.scroll_loaded",
-                    Component.translatable("entity.edotensei." + id)), true);
+                    EdoTargets.nameOf(id)), true);
         }
         return InteractionResult.CONSUME;
     }
@@ -165,8 +164,8 @@ public class EdoTenseiScrollBlock extends BaseEntityBlock {
             player.displayClientMessage(Component.translatable("message.edotensei.not_learned"), true);
             return;
         }
-        HokageEntity.Kind kind = HokageEntity.Kind.byId(scroll.getHokage());
-        if (kind == null) {
+        String entityId = scroll.getEntityId();
+        if (!EdoTargets.isValidType(entityId)) {
             player.displayClientMessage(Component.translatable("message.edotensei.scroll_empty"), true);
             return;
         }
@@ -198,21 +197,19 @@ public class EdoTenseiScrollBlock extends BaseEntityBlock {
             return;
         }
 
-        // O mob selado morre...
+        // O mob selado morre (sem deixar corpo)...
         Vec3 at = best.position();
         float yRot = best.getYRot();
+        best.getPersistentData().putBoolean(EdoTargets.NO_CORPSE_TAG, true);
         best.setNoAi(false);
         best.invulnerableTime = 0;
         best.hurt(level.damageSources().magic(), Float.MAX_VALUE);
         if (best.isAlive()) best.discard();
 
-        // ...e o Hokage toma o lugar dele, obedecendo quem invocou.
-        HokageEntity hokage = ModRegistry.HOKAGES.get(kind).get().create(level);
-        if (hokage != null) {
-            hokage.moveTo(at.x, at.y, at.z, yRot, 0.0F);
-            hokage.setOwner(player.getUUID());
-            hokage.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), MobSpawnType.MOB_SUMMONED, null, null);
-            level.addFreshEntity(hokage);
+        // ...e quem tinha o sangue toma o lugar dele, obedecendo quem invocou.
+        if (EdoTargets.summon(level, entityId, at, yRot, player) == null) {
+            player.displayClientMessage(Component.translatable("message.edotensei.scroll_empty"), true);
+            return;
         }
 
         LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(level);
@@ -224,8 +221,8 @@ public class EdoTenseiScrollBlock extends BaseEntityBlock {
         level.sendParticles(ParticleTypes.SOUL, at.x, at.y + 1.0D, at.z, 80, 0.5D, 1.0D, 0.5D, 0.05D);
         level.playSound(null, pos, SoundEvents.WITHER_SPAWN, SoundSource.PLAYERS, 0.5F, 1.4F);
 
-        scroll.setHokage("");
+        scroll.setEntityId("");
         player.displayClientMessage(Component.translatable("message.edotensei.summoned",
-                Component.translatable("entity.edotensei." + kind.id)), true);
+                EdoTargets.nameOf(entityId)), true);
     }
 }

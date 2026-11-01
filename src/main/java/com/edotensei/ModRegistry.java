@@ -2,6 +2,7 @@ package com.edotensei;
 
 import com.edotensei.block.EdoTenseiScrollBlock;
 import com.edotensei.block.EdoTenseiScrollBlockEntity;
+import com.edotensei.entity.CorpseEntity;
 import com.edotensei.entity.HokageEntity;
 import com.edotensei.item.BloodSyringeItem;
 import com.edotensei.item.ShikiFujinItem;
@@ -62,6 +63,13 @@ public final class ModRegistry {
         }
     }
 
+    public static final RegistryObject<EntityType<CorpseEntity>> CORPSE = ENTITIES.register("corpse",
+            () -> EntityType.Builder.<CorpseEntity>of(CorpseEntity::new, MobCategory.MISC)
+                    .sized(1.6F, 0.5F)
+                    .clientTrackingRange(8)
+                    .updateInterval(20)
+                    .build(new ResourceLocation(EdoTenseiAddon.MODID, "corpse").toString()));
+
     public static final RegistryObject<CreativeModeTab> TAB = TABS.register("main",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.edotensei"))
@@ -70,7 +78,7 @@ public final class ModRegistry {
                         for (RegistryObject<Item> item : ITEMS.getEntries()) {
                             if (item.get() == BLOOD_SYRINGE.get()) {
                                 for (HokageEntity.Kind kind : HokageEntity.Kind.values()) {
-                                    out.accept(BloodSyringeItem.create(kind.id));
+                                    out.accept(BloodSyringeItem.create(EdoTenseiAddon.MODID + ":" + kind.id));
                                 }
                             } else {
                                 out.accept(item.get());

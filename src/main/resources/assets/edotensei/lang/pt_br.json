@@ -35,5 +35,6 @@
   "message.edotensei.blood_inserted": "Sangue colocado no pergaminho: %s",
   "message.edotensei.no_sealed_target": "Nenhuma criatura selada por perto.",
   "message.edotensei.target_not_aligned": "O pergaminho não está apontando para a sua criatura selada.",
-  "message.edotensei.summoned": "Edo Tensei! %s foi revivido."
+  "message.edotensei.summoned": "Edo Tensei! %s foi revivido.",
+  "entity.edotensei.corpse": "Corpo"
 }

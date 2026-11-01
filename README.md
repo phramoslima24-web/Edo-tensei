@@ -15,6 +15,7 @@ ele so e necessario para **rodar** (dependencia obrigatoria no `mods.toml`).
   (ou use o comando `/jutsusproibidos`). Contem **Shiki Fujin** (40 niveis de XP) e **Edo Tensei** (30 niveis).
 - **Shiki Fujin**: clique direito mata o alvo na mira (ate 12 blocos). Custo: vida cai para 2 coracoes, fraqueza/lentidao/fome, recarga de 5 min.
 - **Edo Tensei**: aprender entrega o **Pergaminho do Edo Tensei**.
+- **Edo Tensei em qualquer mob do Narutoto**: ao morrer, todo NPC/ninja/bandido/bijuu do Narutoto (menos dummies, clones e projéteis) deixa o corpo no chão (desenhado deitado, 10 min). A seringa coleta o sangue dele, e o ritual traz esse mob de volta obedecendo você.
 - **Hokages 1, 2 e 3** (Hashirama, Tobirama, Hiruzen): nascem vivos pelo mundo (spawn raro, em qualquer bioma, como os NPCs do Narutoto)
   e tambem tem ovos de spawn. Ao morrer deixam o **corpo no chao por 10 minutos**.
 - **Seringa** (craftavel: pepita de ferro / vidraca / barra de ferro na vertical): clique direito no corpo de um Hokage = **seringa com sangue**.

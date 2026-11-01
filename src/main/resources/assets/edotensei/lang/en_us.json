@@ -35,5 +35,6 @@
   "message.edotensei.blood_inserted": "Blood placed in the scroll: %s",
   "message.edotensei.no_sealed_target": "No sealed creature nearby.",
   "message.edotensei.target_not_aligned": "The scroll is not pointing at your sealed creature.",
-  "message.edotensei.summoned": "Edo Tensei! %s has been resurrected."
+  "message.edotensei.summoned": "Edo Tensei! %s has been resurrected.",
+  "entity.edotensei.corpse": "Corpse"
 }
