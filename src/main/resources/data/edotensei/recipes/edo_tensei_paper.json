@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "minecraft:paper" },
+    { "item": "minecraft:ink_sac" },
+    { "item": "minecraft:redstone" }
+  ],
+  "result": { "item": "edotensei:edo_tensei_paper", "count": 2 }
+}

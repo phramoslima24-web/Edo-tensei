@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "edotensei:block/edo_tensei_scroll" },
+    "facing=east":  { "model": "edotensei:block/edo_tensei_scroll", "y": 90 },
+    "facing=south": { "model": "edotensei:block/edo_tensei_scroll", "y": 180 },
+    "facing=west":  { "model": "edotensei:block/edo_tensei_scroll", "y": 270 }
+  }
+}

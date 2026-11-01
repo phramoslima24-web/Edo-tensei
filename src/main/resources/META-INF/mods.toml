@@ -1,0 +1,32 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+modId="edotensei"
+version="1.0.0"
+displayName="Narutoto - Edo Tensei Addon"
+description='''
+Addon para o Narutoto: jutsus proibidos (Shiki Fujin e Edo Tensei), Hokages 1, 2 e 3, seringa, sangue, papel e pergaminho do Edo Tensei.
+'''
+
+[[dependencies.edotensei]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.edotensei]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1,1.21)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.edotensei]]
+    modId="narutoto"
+    mandatory=true
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"
