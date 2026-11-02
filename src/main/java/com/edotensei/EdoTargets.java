@@ -15,6 +15,9 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -36,6 +39,14 @@ public final class EdoTargets {
         if (key == null || !key.getNamespace().equals("narutoto")) return false;
         if (type.getCategory() == MobCategory.MISC) return false;
         return !type.is(NO_LIFE) && !type.is(CLONE);
+    }
+
+    /** Item de outro mod pelo id (ex.: "narutoto_mangekyou:mangekyou_madara"). Vazio se o mod nao estiver instalado. */
+    public static ItemStack optionalItem(String id) {
+        ResourceLocation rl = ResourceLocation.tryParse(id);
+        if (rl == null || !ForgeRegistries.ITEMS.containsKey(rl)) return ItemStack.EMPTY;
+        Item item = ForgeRegistries.ITEMS.getValue(rl);
+        return item == null || item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item);
     }
 
     public static Component nameOf(String id) {

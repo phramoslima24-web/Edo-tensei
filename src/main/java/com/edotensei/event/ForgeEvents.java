@@ -21,6 +21,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -29,6 +30,7 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -143,6 +145,22 @@ public final class ForgeEvents {
         corpse.setup(key.toString(), entity.getYRot());
         corpse.moveTo(entity.getX(), entity.getY(), entity.getZ(), entity.getYRot(), 0.0F);
         entity.level().addFreshEntity(corpse);
+    }
+
+    private static final ResourceLocation ITACHI_ID = new ResourceLocation("narutoto", "itachi_npc");
+    private static final String ITACHI_EXTRA_DROP = "narutoto_mangekyou:mangekyou_itachi";
+
+    /** Itachi do Narutoto: mantem o drop original e ainda larga o Mangekyou dele (se o addon do Mangekyou estiver instalado). */
+    @SubscribeEvent
+    public static void onDrops(LivingDropsEvent event) {
+        LivingEntity entity = event.getEntity();
+        if (entity.level().isClientSide) return;
+        if (!ITACHI_ID.equals(ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()))) return;
+        if (EdoTargets.ownerOf(entity) != null) return;                          // Itachi revivido nao larga o olho
+        if (entity.getPersistentData().getBoolean(EdoTargets.NO_CORPSE_TAG)) return; // sacrificado no ritual tambem nao
+        ItemStack eye = EdoTargets.optionalItem(ITACHI_EXTRA_DROP);
+        if (eye.isEmpty()) return;
+        event.getDrops().add(new ItemEntity(entity.level(), entity.getX(), entity.getY() + 0.5D, entity.getZ(), eye));
     }
 
     /** Mobs invocados (qualquer um do Narutoto): seguem e protegem o invocador. */

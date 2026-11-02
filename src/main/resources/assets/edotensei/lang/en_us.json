@@ -36,5 +36,11 @@
   "message.edotensei.no_sealed_target": "No sealed creature nearby.",
   "message.edotensei.target_not_aligned": "The scroll is not pointing at your sealed creature.",
   "message.edotensei.summoned": "Edo Tensei! %s has been resurrected.",
-  "entity.edotensei.corpse": "Corpse"
+  "entity.edotensei.corpse": "Corpse",
+  "item.edotensei.madara_spawn_egg": "Madara Uchiha Spawn Egg",
+  "item.edotensei.shisui_spawn_egg": "Shisui Uchiha Spawn Egg",
+  "entity.edotensei.madara": "Madara Uchiha",
+  "entity.edotensei.shisui": "Shisui Uchiha",
+  "dialog.edotensei.madara": "Wake up... and see what true power is.",
+  "dialog.edotensei.shisui": "Protecting the village is what matters. Don't make me fight."
 }

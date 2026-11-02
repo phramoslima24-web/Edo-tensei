@@ -4,10 +4,10 @@ license="MIT"
 
 [[mods]]
 modId="edotensei"
-version="1.0.0"
+version="1.1.0"
 displayName="Narutoto - Edo Tensei Addon"
 description='''
-Addon para o Narutoto: jutsus proibidos (Shiki Fujin e Edo Tensei), Hokages 1, 2 e 3, seringa, sangue, papel e pergaminho do Edo Tensei.
+Addon para o Narutoto: jutsus proibidos (Shiki Fujin e Edo Tensei), Hokages 1, 2 e 3, Madara e Shisui, seringa, sangue, papel e pergaminho do Edo Tensei.
 '''
 
 [[dependencies.edotensei]]
@@ -27,6 +27,13 @@ Addon para o Narutoto: jutsus proibidos (Shiki Fujin e Edo Tensei), Hokages 1, 2
 [[dependencies.edotensei]]
     modId="narutoto"
     mandatory=true
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.edotensei]]
+    modId="narutoto_mangekyou"
+    mandatory=false
     versionRange="[0,)"
     ordering="AFTER"
     side="BOTH"

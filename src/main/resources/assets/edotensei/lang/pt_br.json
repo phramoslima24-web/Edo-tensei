@@ -36,5 +36,11 @@
   "message.edotensei.no_sealed_target": "Nenhuma criatura selada por perto.",
   "message.edotensei.target_not_aligned": "O pergaminho não está apontando para a sua criatura selada.",
   "message.edotensei.summoned": "Edo Tensei! %s foi revivido.",
-  "entity.edotensei.corpse": "Corpo"
+  "entity.edotensei.corpse": "Corpo",
+  "item.edotensei.madara_spawn_egg": "Ovo de Spawn do Madara Uchiha",
+  "item.edotensei.shisui_spawn_egg": "Ovo de Spawn do Shisui Uchiha",
+  "entity.edotensei.madara": "Madara Uchiha",
+  "entity.edotensei.shisui": "Shisui Uchiha",
+  "dialog.edotensei.madara": "Acorde... e veja o que é o verdadeiro poder.",
+  "dialog.edotensei.shisui": "Proteger a vila é o que importa. Não me force a lutar."
 }

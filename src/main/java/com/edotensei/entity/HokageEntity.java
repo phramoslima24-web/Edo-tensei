@@ -1,9 +1,11 @@
 package com.edotensei.entity;
 
+import com.edotensei.EdoTargets;
 import java.util.EnumSet;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -13,6 +15,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
@@ -28,11 +32,16 @@ import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.SmallFireball;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Hokage (1o, 2o ou 3o). Pode nascer vivo no mundo (neutro) ou ser invocado
@@ -41,22 +50,39 @@ import net.minecraft.world.level.ServerLevelAccessor;
 public class HokageEntity extends PathfinderMob {
 
     public enum Kind {
-        HASHIRAMA("hashirama", 220.0F, 14.0F, 0x5B3A29, 0x2E6B3A),
-        TOBIRAMA("tobirama", 160.0F, 12.0F, 0xD8D8E0, 0xA02020),
-        HIRUZEN("hiruzen", 140.0F, 10.0F, 0xF2F2F2, 0xB02A2A);
+        //          id          vida    dano   veloc.  armadura ovo1      ovo2      hostil  drop (item de outro mod, opcional)
+        HASHIRAMA("hashirama", 220.0F, 14.0F, 0.33D, 6.0D,  0x5B3A29, 0x2E6B3A, false, null),
+        TOBIRAMA("tobirama",   160.0F, 12.0F, 0.33D, 6.0D,  0xD8D8E0, 0xA02020, false, null),
+        HIRUZEN("hiruzen",     140.0F, 10.0F, 0.33D, 6.0D,  0xF2F2F2, 0xB02A2A, false, null),
+        /** Madara: ataca qualquer jogador por conta propria. Larga o Mangekyou dele. */
+        MADARA("madara",       400.0F, 24.0F, 0.38D, 12.0D, 0x1A1A1A, 0xA02020, true,  "narutoto_mangekyou:mangekyou_madara"),
+        /** Shisui: so ataca se for atacado. Larga o Mangekyou dele. */
+        SHISUI("shisui",       300.0F, 20.0F, 0.42D, 8.0D,  0x2B2B3A, 0xC02020, false, "narutoto_mangekyou:mangekyou_shisui");
 
         public final String id;
         public final float health;
         public final float damage;
+        public final double speed;
+        public final double armor;
         public final int eggPrimary;
         public final int eggSecondary;
+        /** true = ataca jogadores sem ser provocado (so quando nao foi invocado por Edo Tensei). */
+        public final boolean hostile;
+        /** Id do item largado ao morrer (null = nada). So larga se nao foi invocado por Edo Tensei. */
+        @Nullable
+        public final String dropItem;
 
-        Kind(String id, float health, float damage, int eggPrimary, int eggSecondary) {
+        Kind(String id, float health, float damage, double speed, double armor, int eggPrimary, int eggSecondary,
+             boolean hostile, @Nullable String dropItem) {
             this.id = id;
             this.health = health;
             this.damage = damage;
+            this.speed = speed;
+            this.armor = armor;
             this.eggPrimary = eggPrimary;
             this.eggSecondary = eggSecondary;
+            this.hostile = hostile;
+            this.dropItem = dropItem;
         }
 
         @Nullable
@@ -77,6 +103,13 @@ public class HokageEntity extends PathfinderMob {
     private boolean harvested;
     private int corpseAge;
 
+    // tempos de recarga das habilidades (em ticks)
+    private int katonCd;
+    private int shockCd;
+    private int susanooCd;
+    private int shunshinCd;
+    private int genjutsuCd;
+
     public HokageEntity(EntityType<? extends HokageEntity> type, Level level, Kind kind) {
         super(type, level);
         this.kind = kind;
@@ -86,11 +119,11 @@ public class HokageEntity extends PathfinderMob {
     public static AttributeSupplier.Builder createAttributes(Kind kind) {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, kind.health)
-                .add(Attributes.MOVEMENT_SPEED, 0.33D)
+                .add(Attributes.MOVEMENT_SPEED, kind.speed)
                 .add(Attributes.ATTACK_DAMAGE, kind.damage)
                 .add(Attributes.FOLLOW_RANGE, 32.0D)
-                .add(Attributes.KNOCKBACK_RESISTANCE, 0.6D)
-                .add(Attributes.ARMOR, 6.0D);
+                .add(Attributes.KNOCKBACK_RESISTANCE, kind == Kind.MADARA ? 0.9D : 0.6D)
+                .add(Attributes.ARMOR, kind.armor);
     }
 
     public static boolean checkSpawn(EntityType<HokageEntity> type, ServerLevelAccessor level, MobSpawnType reason, BlockPos pos, RandomSource random) {
@@ -135,6 +168,122 @@ public class HokageEntity extends PathfinderMob {
         this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
         this.targetSelector.addGoal(1, new OwnerProtectGoal(this));
         this.targetSelector.addGoal(2, new HurtByTargetGoal(this));
+        // Madara: ataca jogadores sem ser provocado (so se nao foi invocado). "kind" ainda e null aqui,
+        // entao a condicao e avaliada so depois, durante o jogo.
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false,
+                e -> this.kind != null && this.kind.hostile && this.owner == null));
+    }
+
+    // ------------------------------------------------------------- habilidades
+
+    /** Pode ser atingido pelas habilidades? (nunca o invocador, nem os aliados dele, nem outros Hokages). */
+    private boolean canHarm(LivingEntity e) {
+        if (e == this || e instanceof HokageEntity || !e.isAlive()) return false;
+        if (owner != null) {
+            if (owner.equals(e.getUUID())) return false;
+            if (owner.equals(EdoTargets.ownerOf(e))) return false;
+        }
+        return true;
+    }
+
+    @Override
+    protected void customServerAiStep() {
+        super.customServerAiStep();
+        if (katonCd > 0) katonCd--;
+        if (shockCd > 0) shockCd--;
+        if (susanooCd > 0) susanooCd--;
+        if (shunshinCd > 0) shunshinCd--;
+        if (genjutsuCd > 0) genjutsuCd--;
+
+        LivingEntity target = getTarget();
+        if (target == null || !target.isAlive() || !canHarm(target)) return;
+        if (kind == Kind.MADARA) madaraTick(target);
+        else if (kind == Kind.SHISUI) shisuiTick(target);
+    }
+
+    private void madaraTick(LivingEntity target) {
+        ServerLevel server = (ServerLevel) level();
+        double d2 = distanceToSqr(target);
+
+        // Susanoo: abaixo de 50% de vida ganha resistencia forte por 10 segundos
+        if (susanooCd <= 0 && getHealth() < getMaxHealth() * 0.5F) {
+            addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 2));
+            susanooCd = 600;
+            server.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, getX(), getY() + 1.0D, getZ(), 60, 0.6D, 1.0D, 0.6D, 0.05D);
+            playSound(SoundEvents.BEACON_ACTIVATE, 1.0F, 0.6F);
+        }
+
+        // Shinra Tensei: onda de choque que arremessa todos que estiverem perto
+        if (shockCd <= 0 && d2 < 36.0D) {
+            shockCd = 160;
+            for (LivingEntity e : server.getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(6.0D), this::canHarm)) {
+                Vec3 push = e.position().subtract(position()).multiply(1.0D, 0.0D, 1.0D).normalize();
+                e.hurt(damageSources().mobAttack(this), 8.0F);
+                e.setDeltaMovement(e.getDeltaMovement().add(push.x * 1.6D, 0.6D, push.z * 1.6D));
+                e.hurtMarked = true;
+            }
+            server.sendParticles(ParticleTypes.EXPLOSION, getX(), getY() + 1.0D, getZ(), 6, 1.5D, 0.5D, 1.5D, 0.0D);
+            playSound(SoundEvents.GENERIC_EXPLODE, 1.0F, 1.2F);
+            return;
+        }
+
+        // Katon: Goukakyuu no Jutsu - leque de bolas de fogo a distancia
+        if (katonCd <= 0 && d2 >= 16.0D && d2 <= 576.0D && hasLineOfSight(target)) {
+            katonCd = 70;
+            Vec3 look = target.getEyePosition().subtract(getEyePosition()).normalize();
+            for (int i = -1; i <= 1; i++) {
+                Vec3 dir = look.yRot(i * 0.15F);
+                SmallFireball ball = new SmallFireball(level(), this, dir.x, dir.y, dir.z);
+                ball.setPos(getX() + dir.x * 1.5D, getEyeY() - 0.2D, getZ() + dir.z * 1.5D);
+                level().addFreshEntity(ball);
+            }
+            playSound(SoundEvents.BLAZE_SHOOT, 1.2F, 0.7F);
+        }
+    }
+
+    private void shisuiTick(LivingEntity target) {
+        ServerLevel server = (ServerLevel) level();
+        double d2 = distanceToSqr(target);
+
+        // Shunshin: some e reaparece atras do alvo, ja atacando
+        if (shunshinCd <= 0 && d2 > 25.0D && d2 < 900.0D) {
+            Vec3 back = target.getLookAngle().multiply(1.0D, 0.0D, 1.0D).normalize().scale(-1.6D);
+            double nx = target.getX() + back.x;
+            double ny = target.getY();
+            double nz = target.getZ() + back.z;
+            AABB box = getBoundingBox().move(nx - getX(), ny - getY(), nz - getZ());
+            if (level().noCollision(this, box)) {
+                server.sendParticles(ParticleTypes.CLOUD, getX(), getY() + 1.0D, getZ(), 20, 0.3D, 0.6D, 0.3D, 0.02D);
+                moveTo(nx, ny, nz, getYRot(), getXRot());
+                getNavigation().stop();
+                getLookControl().setLookAt(target, 30.0F, 30.0F);
+                server.sendParticles(ParticleTypes.CLOUD, getX(), getY() + 1.0D, getZ(), 20, 0.3D, 0.6D, 0.3D, 0.02D);
+                playSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.5F);
+                doHurtTarget(target);
+                shunshinCd = 80;
+            } else {
+                shunshinCd = 20; // sem espaco atras do alvo, tenta de novo logo
+            }
+        }
+
+        // Genjutsu (Kotoamatsukami): cega, atordoa e deixa o alvo lento
+        if (genjutsuCd <= 0 && d2 < 256.0D && hasLineOfSight(target)) {
+            genjutsuCd = 200;
+            target.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 80, 0));
+            target.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 120, 0));
+            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 2));
+            server.sendParticles(ParticleTypes.ENCHANT, target.getX(), target.getEyeY(), target.getZ(), 40, 0.4D, 0.4D, 0.4D, 0.8D);
+            playSound(SoundEvents.EVOKER_CAST_SPELL, 1.0F, 0.8F);
+        }
+    }
+
+    /** Larga o item do Kind (ex.: Mangekyou) ao morrer, mas so se NAO foi invocado pelo Edo Tensei. */
+    @Override
+    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        if (owner != null || kind.dropItem == null) return;
+        ItemStack stack = EdoTargets.optionalItem(kind.dropItem);
+        if (!stack.isEmpty()) this.spawnAtLocation(stack);
     }
 
     @Override
