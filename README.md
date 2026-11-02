@@ -26,7 +26,12 @@ ele so e necessario para **rodar** (dependencia obrigatoria no `mods.toml`).
   **Shift + clique direito com as duas maos vazias** com o mob selado na frente do pergaminho (ate 12 blocos) = o mob morre e o Hokage aparece no lugar,
   **obedece e protege** quem invocou. Precisa ter aprendido o Edo Tensei.
 
+## Habilidades dos Hokages (novo)
+- **Hashirama**: Mokuton (raizes prendem e ferem o alvo, onda de madeira em volta), regeneracao com pouca vida e **cura o invocador** que estiver por perto.
+- **Tobirama**: Hiraishin (aparece atras do alvo atacando) e Suiton (onda de agua que arremessa e deixa lento).
+- **Hiruzen**: Katon (leque de bolas de fogo) e Kawarimi (com pouca vida troca de lugar e evita o golpe).
+
 ## Observacoes
-- Os Hokages usam o modelo humanoide padrao do Minecraft e texturas simples (em `assets/edotensei/textures/entity/`) - troque por skins melhores.
+- Os Hokages usam o modelo humanoide padrao do Minecraft e skins dos Hokages em `assets/edotensei/textures/entity/` (hashirama, tobirama, hiruzen).
 - `data/forge/tags/entity_types/konoha_ninja.json` adiciona os Hokages a tag de ninjas de Konoha do Narutoto; apague o arquivo se nao quiser.
 - Hokages so nascem em chunks **novos** (como animais).

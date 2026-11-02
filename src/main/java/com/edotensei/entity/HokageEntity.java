@@ -195,10 +195,124 @@ public class HokageEntity extends PathfinderMob {
         if (shunshinCd > 0) shunshinCd--;
         if (genjutsuCd > 0) genjutsuCd--;
 
+        hokagePassiveTick();
+
         LivingEntity target = getTarget();
         if (target == null || !target.isAlive() || !canHarm(target)) return;
         if (kind == Kind.MADARA) madaraTick(target);
         else if (kind == Kind.SHISUI) shisuiTick(target);
+        else if (kind == Kind.HASHIRAMA) hashiramaTick(target);
+        else if (kind == Kind.TOBIRAMA) tobiramaTick(target);
+        else if (kind == Kind.HIRUZEN) hiruzenTick(target);
+    }
+
+    /** Habilidades passivas dos Hokages (nao dependem de ter alvo). */
+    private void hokagePassiveTick() {
+        if (kind != Kind.HASHIRAMA || !(level() instanceof ServerLevel server)) return;
+        // Hashirama: cura lentamente o invocador que estiver por perto
+        if (genjutsuCd <= 0 && owner != null) {
+            LivingEntity o = getOwner();
+            if (o != null && o.isAlive() && o.level() == level() && distanceToSqr(o) < 100.0D && o.getHealth() < o.getMaxHealth()) {
+                o.heal(2.0F);
+                genjutsuCd = 100;
+                server.sendParticles(ParticleTypes.HAPPY_VILLAGER, o.getX(), o.getY() + 1.0D, o.getZ(), 8, 0.4D, 0.6D, 0.4D, 0.0D);
+            }
+        }
+    }
+
+    /** Hashirama - Mokuton: raizes prendem o alvo; regeneracao Senju com pouca vida. */
+    private void hashiramaTick(LivingEntity target) {
+        ServerLevel server = (ServerLevel) level();
+        double d2 = distanceToSqr(target);
+
+        if (susanooCd <= 0 && getHealth() < getMaxHealth() * 0.5F) {
+            addEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 2));
+            addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 100, 1));
+            susanooCd = 700;
+            server.sendParticles(ParticleTypes.HAPPY_VILLAGER, getX(), getY() + 1.0D, getZ(), 40, 0.6D, 1.0D, 0.6D, 0.0D);
+            playSound(SoundEvents.BEACON_POWER_SELECT, 1.0F, 1.0F);
+        }
+
+        // Mokuton: Shibari - raizes prendem e ferem o alvo
+        if (shockCd <= 0 && d2 < 196.0D && hasLineOfSight(target)) {
+            shockCd = 140;
+            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 80, 4));
+            target.hurt(damageSources().mobAttack(this), 6.0F);
+            server.sendParticles(ParticleTypes.COMPOSTER, target.getX(), target.getY() + 0.5D, target.getZ(), 40, 0.5D, 0.8D, 0.5D, 0.0D);
+            server.sendParticles(ParticleTypes.HAPPY_VILLAGER, target.getX(), target.getY() + 1.0D, target.getZ(), 15, 0.5D, 0.8D, 0.5D, 0.0D);
+            playSound(SoundEvents.GRASS_BREAK, 1.2F, 0.6F);
+        }
+
+        // Mokuton: Shichuuka no Jutsu - area ao redor dele empurra e fere quem chega perto
+        if (katonCd <= 0 && d2 < 16.0D) {
+            katonCd = 120;
+            for (LivingEntity e : server.getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(4.0D), this::canHarm)) {
+                Vec3 push = e.position().subtract(position()).multiply(1.0D, 0.0D, 1.0D).normalize();
+                e.hurt(damageSources().mobAttack(this), 7.0F);
+                e.setDeltaMovement(e.getDeltaMovement().add(push.x * 1.0D, 0.4D, push.z * 1.0D));
+                e.hurtMarked = true;
+            }
+            server.sendParticles(ParticleTypes.COMPOSTER, getX(), getY() + 1.0D, getZ(), 50, 2.0D, 0.8D, 2.0D, 0.0D);
+            playSound(SoundEvents.WOOD_BREAK, 1.2F, 0.7F);
+        }
+    }
+
+    /** Tobirama - Suiton e Hiraishin. */
+    private void tobiramaTick(LivingEntity target) {
+        ServerLevel server = (ServerLevel) level();
+        double d2 = distanceToSqr(target);
+
+        // Hiraishin no Jutsu: aparece atras do alvo ja atacando
+        if (shunshinCd <= 0 && d2 > 25.0D && d2 < 900.0D) {
+            Vec3 back = target.getLookAngle().multiply(1.0D, 0.0D, 1.0D).normalize().scale(-1.6D);
+            double nx = target.getX() + back.x;
+            double ny = target.getY();
+            double nz = target.getZ() + back.z;
+            AABB box = getBoundingBox().move(nx - getX(), ny - getY(), nz - getZ());
+            if (level().noCollision(this, box)) {
+                server.sendParticles(ParticleTypes.ELECTRIC_SPARK, getX(), getY() + 1.0D, getZ(), 15, 0.3D, 0.6D, 0.3D, 0.05D);
+                moveTo(nx, ny, nz, getYRot(), getXRot());
+                getNavigation().stop();
+                getLookControl().setLookAt(target, 30.0F, 30.0F);
+                server.sendParticles(ParticleTypes.ELECTRIC_SPARK, getX(), getY() + 1.0D, getZ(), 15, 0.3D, 0.6D, 0.3D, 0.05D);
+                playSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.7F);
+                doHurtTarget(target);
+                shunshinCd = 100;
+            } else {
+                shunshinCd = 20;
+            }
+        }
+
+        // Suiton: Suiryuudan - onda de agua que arremessa quem estiver perto
+        if (shockCd <= 0 && d2 < 64.0D) {
+            shockCd = 130;
+            for (LivingEntity e : server.getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(5.0D), this::canHarm)) {
+                Vec3 push = e.position().subtract(position()).multiply(1.0D, 0.0D, 1.0D).normalize();
+                e.hurt(damageSources().mobAttack(this), 6.0F);
+                e.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 1));
+                e.setDeltaMovement(e.getDeltaMovement().add(push.x * 1.3D, 0.5D, push.z * 1.3D));
+                e.hurtMarked = true;
+            }
+            server.sendParticles(ParticleTypes.SPLASH, getX(), getY() + 1.0D, getZ(), 80, 2.0D, 0.6D, 2.0D, 0.2D);
+            server.sendParticles(ParticleTypes.BUBBLE_POP, getX(), getY() + 1.0D, getZ(), 30, 1.5D, 0.6D, 1.5D, 0.05D);
+            playSound(SoundEvents.PLAYER_SPLASH_HIGH_SPEED, 1.2F, 0.8F);
+        }
+    }
+
+    /** Hiruzen - Katon e Kawarimi (a troca esta em hurt()). */
+    private void hiruzenTick(LivingEntity target) {
+        double d2 = distanceToSqr(target);
+        if (katonCd <= 0 && d2 >= 9.0D && d2 <= 400.0D && hasLineOfSight(target)) {
+            katonCd = 90;
+            Vec3 look = target.getEyePosition().subtract(getEyePosition()).normalize();
+            for (int i = -1; i <= 1; i++) {
+                Vec3 dir = look.yRot(i * 0.12F);
+                SmallFireball ball = new SmallFireball(level(), this, dir.x, dir.y, dir.z);
+                ball.setPos(getX() + dir.x * 1.5D, getEyeY() - 0.2D, getZ() + dir.z * 1.5D);
+                level().addFreshEntity(ball);
+            }
+            playSound(SoundEvents.BLAZE_SHOOT, 1.2F, 0.9F);
+        }
     }
 
     private void madaraTick(LivingEntity target) {
@@ -290,6 +404,20 @@ public class HokageEntity extends PathfinderMob {
     public boolean hurt(DamageSource source, float amount) {
         if (owner != null && source.getEntity() != null && owner.equals(source.getEntity().getUUID())) {
             return false; // nao machuca quem o invocou
+        }
+        // Hiruzen - Kawarimi no Jutsu: com pouca vida, troca de lugar e evita o golpe
+        if (kind == Kind.HIRUZEN && susanooCd <= 0 && !level().isClientSide && isAlive()
+                && getHealth() < getMaxHealth() * 0.6F && source.getEntity() != null) {
+            for (int i = 0; i < 10; i++) {
+                double x = getX() + random.nextInt(11) - 5;
+                double z = getZ() + random.nextInt(11) - 5;
+                if (randomTeleport(x, getY(), z, true)) {
+                    susanooCd = 400;
+                    ((ServerLevel) level()).sendParticles(ParticleTypes.CLOUD, getX(), getY() + 1.0D, getZ(), 25, 0.4D, 0.8D, 0.4D, 0.02D);
+                    playSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.4F);
+                    return false;
+                }
+            }
         }
         return super.hurt(source, amount);
     }
