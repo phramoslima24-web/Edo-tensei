@@ -1,6 +1,7 @@
 package com.edotensei.entity;
 
 import com.edotensei.EdoTargets;
+import com.edotensei.jutsu.HokageTeachings;
 import java.util.EnumSet;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -9,6 +10,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
@@ -51,8 +53,11 @@ public class HokageEntity extends PathfinderMob {
 
     public enum Kind {
         //          id          vida    dano   veloc.  armadura ovo1      ovo2      hostil  drop (item de outro mod, opcional)
-        HASHIRAMA("hashirama", 220.0F, 14.0F, 0.33D, 6.0D,  0x5B3A29, 0x2E6B3A, false, null),
-        TOBIRAMA("tobirama",   160.0F, 12.0F, 0.33D, 6.0D,  0xD8D8E0, 0xA02020, false, null),
+        /** Hashirama: sempre larga as Celulas de Hashirama do Narutoto (so se nao foi invocado). */
+        HASHIRAMA("hashirama", 220.0F, 14.0F, 0.33D, 6.0D,  0x5B3A29, 0x2E6B3A, false, "narutoto:hashirama_needle"),
+        /** Tobirama: sempre larga a Kunai do Hiraishin do Narutoto (so se nao foi invocado). */
+        TOBIRAMA("tobirama",   160.0F, 12.0F, 0.33D, 6.0D,  0xD8D8E0, 0xA02020, false, "narutoto:hiraishin_kunai_weapon"),
+        /** Hiruzen: nao larga nada. */
         HIRUZEN("hiruzen",     140.0F, 10.0F, 0.33D, 6.0D,  0xF2F2F2, 0xB02A2A, false, null),
         /** Madara: ataca qualquer jogador por conta propria. Larga o Mangekyou dele. */
         MADARA("madara",       400.0F, 24.0F, 0.38D, 12.0D, 0x1A1A1A, 0xA02020, true,  "narutoto_mangekyou:mangekyou_madara"),
@@ -450,6 +455,9 @@ public class HokageEntity extends PathfinderMob {
                         Component.translatable("entity.edotensei." + kind.id).append(": ")
                                 .append(Component.translatable("dialog.edotensei." + kind.id)),
                         false);
+                if (player instanceof ServerPlayer serverPlayer) {
+                    HokageTeachings.offer(serverPlayer, this);
+                }
             }
             return InteractionResult.sidedSuccess(level().isClientSide);
         }

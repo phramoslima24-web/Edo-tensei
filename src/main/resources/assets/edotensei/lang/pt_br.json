@@ -42,5 +42,17 @@
   "entity.edotensei.madara": "Madara Uchiha",
   "entity.edotensei.shisui": "Shisui Uchiha",
   "dialog.edotensei.madara": "Acorde... e veja o que é o verdadeiro poder.",
-  "dialog.edotensei.shisui": "Proteger a vila é o que importa. Não me force a lutar."
+  "dialog.edotensei.shisui": "Proteger a vila é o que importa. Não me force a lutar.",
+  "jutsu.edotensei.mokuton": "Mokuton (Elemento Madeira)",
+  "jutsu.edotensei.hiraishin": "Hiraishin no Jutsu (Deus Voador do Trovão)",
+  "jutsu.edotensei.suiton": "Suiton (Elemento Água)",
+  "jutsu.edotensei.raiton": "Raiton (Elemento Raio)",
+  "message.edotensei.teach.offer": "Posso te ensinar:",
+  "message.edotensei.teach.option": "[ Aprender %s ]",
+  "message.edotensei.teach.known": "✔ %s (já aprendido)",
+  "message.edotensei.teach.hover": "Clique para aprender %s",
+  "message.edotensei.teach.learned": "%s te ensinou: %s",
+  "message.edotensei.teach.already": "Você já conhece %s.",
+  "message.edotensei.teach.too_far": "Chegue mais perto de %s para aprender isso.",
+  "message.edotensei.teach.unavailable": "Não foi possível aprender: o Narutoto não tem esse poder registrado."
 }

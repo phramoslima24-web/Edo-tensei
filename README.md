@@ -15,7 +15,7 @@ ele so e necessario para **rodar** (dependencia obrigatoria no `mods.toml`).
   (ou use o comando `/jutsusproibidos`). Contem **Shiki Fujin** (40 niveis de XP) e **Edo Tensei** (30 niveis).
 - **Shiki Fujin**: clique direito mata o alvo na mira (ate 12 blocos). Custo: vida cai para 2 coracoes, fraqueza/lentidao/fome, recarga de 5 min.
 - **Edo Tensei**: aprender entrega o **Pergaminho do Edo Tensei**.
-- **Edo Tensei em qualquer mob do Narutoto**: ao morrer, apenas os NPCs/ninjas/bandidos humanoides do Narutoto deixam o corpo no chão (jutsus, bijuus como o Kurama, invocações como o Gamabunta, dummies, clones e projéteis NÃO deixam corpo). O corpo cai de costas se o golpe veio da frente e de bruços se veio por trás (sorteado em fogo/queda), fica 10 minutos e some numa nuvem de fumaça (desenhado deitado, 10 min). A seringa coleta o sangue dele, e o ritual traz esse mob de volta obedecendo você.
+- **Edo Tensei em qualquer mob do Narutoto**: ao morrer, apenas os NPCs/ninjas/bandidos humanoides do Narutoto deixam o corpo no chão (jutsus, bijuus como o Kurama, invocações como o Gamabunta, dummies, clones e projéteis NÃO deixam corpo) (desenhado deitado, 10 min). A seringa coleta o sangue dele, e o ritual traz esse mob de volta obedecendo você.
 - **Hokages 1, 2 e 3** (Hashirama, Tobirama, Hiruzen): nascem vivos pelo mundo (spawn raro, em qualquer bioma, como os NPCs do Narutoto)
   e tambem tem ovos de spawn. Ao morrer deixam o **corpo no chao por 10 minutos**.
 - **Seringa** (craftavel: pepita de ferro / vidraca / barra de ferro na vertical): clique direito no corpo de um Hokage = **seringa com sangue**.
@@ -30,6 +30,16 @@ ele so e necessario para **rodar** (dependencia obrigatoria no `mods.toml`).
 - **Hashirama**: Mokuton (raizes prendem e ferem o alvo, onda de madeira em volta), regeneracao com pouca vida e **cura o invocador** que estiver por perto.
 - **Tobirama**: Hiraishin (aparece atras do alvo atacando) e Suiton (onda de agua que arremessa e deixa lento).
 - **Hiruzen**: Katon (leque de bolas de fogo) e Kawarimi (com pouca vida troca de lugar e evita o golpe).
+
+## Hokages ensinam jutsus do Narutoto (novo)
+Clique direito num Hokage vivo: ele fala e mostra no chat botoes clicaveis `[ Aprender ... ]` (sem custo). Funciona so quando voce esta perto dele (ate 8 blocos).
+- **Hashirama** (1o): **Mokuton** (elemento madeira). Ao morrer larga **Celulas de Hashirama** (`narutoto:hashirama_needle`) com 100% de chance.
+- **Tobirama** (2o): **Hiraishin no Jutsu** (o mesmo do Minato) e **Suiton** (elemento agua). Ao morrer larga a **Kunai do Hiraishin** (`narutoto:hiraishin_kunai_weapon`).
+- **Hiruzen** (3o): **Raiton** (elemento raio). Nao larga nada.
+
+Os drops so acontecem com Hokages que nasceram no mundo; os revividos pelo Edo Tensei nao largam item (evita farm infinito).
+Aprender = conceder o advancement do Narutoto (`nature_wood`, `learn_hiraishin`, `nature_water`, `nature_lightning`). Para equipar o Hiraishin, abra a tela de jutsus do Narutoto como de costume.
+O comando usado pelos botoes e `/edotensei_aprender <mokuton|hiraishin|suiton|raiton>`.
 
 ## Observacoes
 - Os Hokages usam o modelo humanoide padrao do Minecraft e skins dos Hokages em `assets/edotensei/textures/entity/` (hashirama, tobirama, hiruzen).

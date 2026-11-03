@@ -52,15 +52,9 @@ public class CorpseRenderer extends EntityRenderer<CorpseEntity> {
         Entity ghost = ghostFor(corpse.getEntityTypeId(), corpse.level());
         if (ghost == null) return;
 
-        // Corpo deitado: de costas (barriga pra cima) ou de bruços, com o meio do corpo no centro do hitbox
-        // e a cabeça apontando pro lado de onde ele caiu.
-        float height = ghost.getBbHeight();
-        float thick = Math.max(0.12F, ghost.getBbWidth() * 0.22F);
-        boolean faceUp = corpse.isFaceUp();
         pose.pushPose();
         pose.mulPose(Axis.YP.rotationDegrees(-corpse.getYRot()));
-        pose.translate(0.0D, thick, faceUp ? height * 0.5D : -height * 0.5D);
-        pose.mulPose(Axis.XP.rotationDegrees(faceUp ? -90.0F : 90.0F));
+        pose.mulPose(Axis.ZP.rotationDegrees(90.0F));
         try {
             Minecraft.getInstance().getEntityRenderDispatcher().render(ghost, 0.0D, 0.0D, 0.0D, 0.0F, 0.0F, pose, buffer, light);
         } catch (Throwable ignored) {

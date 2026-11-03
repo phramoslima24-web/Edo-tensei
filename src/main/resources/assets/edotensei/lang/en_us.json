@@ -42,5 +42,17 @@
   "entity.edotensei.madara": "Madara Uchiha",
   "entity.edotensei.shisui": "Shisui Uchiha",
   "dialog.edotensei.madara": "Wake up... and see what true power is.",
-  "dialog.edotensei.shisui": "Protecting the village is what matters. Don't make me fight."
+  "dialog.edotensei.shisui": "Protecting the village is what matters. Don't make me fight.",
+  "jutsu.edotensei.mokuton": "Mokuton (Wood Release)",
+  "jutsu.edotensei.hiraishin": "Hiraishin no Jutsu (Flying Thunder God)",
+  "jutsu.edotensei.suiton": "Suiton (Water Release)",
+  "jutsu.edotensei.raiton": "Raiton (Lightning Release)",
+  "message.edotensei.teach.offer": "I can teach you:",
+  "message.edotensei.teach.option": "[ Learn %s ]",
+  "message.edotensei.teach.known": "✔ %s (already learned)",
+  "message.edotensei.teach.hover": "Click to learn %s",
+  "message.edotensei.teach.learned": "%s taught you: %s",
+  "message.edotensei.teach.already": "You already know %s.",
+  "message.edotensei.teach.too_far": "Get closer to %s to learn this.",
+  "message.edotensei.teach.unavailable": "Could not learn: Narutoto has no such power registered."
 }

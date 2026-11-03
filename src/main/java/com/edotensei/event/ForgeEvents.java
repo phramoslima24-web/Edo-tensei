@@ -10,8 +10,6 @@ import com.edotensei.item.BloodSyringeItem;
 import com.edotensei.jutsu.Jutsus;
 import java.util.UUID;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -144,27 +142,9 @@ public final class ForgeEvents {
 
         CorpseEntity corpse = ModRegistry.CORPSE.get().create(entity.level());
         if (corpse == null) return;
-        float yaw = entity.yBodyRot;
-        corpse.setup(key.toString(), yaw, fellOnBack(entity, event.getSource()));
-        corpse.moveTo(entity.getX(), entity.getY(), entity.getZ(), yaw, 0.0F);
+        corpse.setup(key.toString(), entity.getYRot());
+        corpse.moveTo(entity.getX(), entity.getY(), entity.getZ(), entity.getYRot(), 0.0F);
         entity.level().addFreshEntity(corpse);
-    }
-
-    /**
-     * Golpe vindo da frente: o ninja cai de costas (barriga pra cima).
-     * Golpe vindo por tras: cai de bruços. Sem atacante (fogo, queda...): sorteia.
-     */
-    private static boolean fellOnBack(LivingEntity victim, DamageSource source) {
-        Vec3 from = source.getSourcePosition();
-        if (from == null) return victim.getRandom().nextBoolean();
-        double dx = from.x - victim.getX();
-        double dz = from.z - victim.getZ();
-        double len = Math.sqrt(dx * dx + dz * dz);
-        if (len < 1.0E-4D) return victim.getRandom().nextBoolean();
-        double yawRad = Math.toRadians(victim.yBodyRot);
-        double fx = -Math.sin(yawRad);
-        double fz = Math.cos(yawRad);
-        return (dx * fx + dz * fz) / len >= 0.0D;
     }
 
     private static final ResourceLocation ITACHI_ID = new ResourceLocation("narutoto", "itachi_npc");

@@ -32,17 +32,19 @@ public final class EdoTargets {
     private static final TagKey<EntityType<?>> NO_LIFE = TagKey.create(Registries.ENTITY_TYPE, new ResourceLocation("forge", "no_life"));
     private static final TagKey<EntityType<?>> CLONE = TagKey.create(Registries.ENTITY_TYPE, new ResourceLocation("forge", "clone"));
 
-    /** Pedacos de id de bijuus, invocacoes e jutsus conhecidos: nunca deixam corpo. */
+    /** Pedacos de id que indicam jutsu, invocacao ou bijuu: nunca deixam corpo. */
     private static final String[] NOT_NINJA_WORDS = {
             "kurama", "gamabunta", "bunta", "gamakichi", "gamatatsu", "bijuu", "tailed", "shukaku", "matatabi",
-            "isobu", "son_goku", "kokuo", "saiken", "choumei", "gyuki", "gyuuki", "susanoo", "manda", "katsuyu",
-            "jutsu", "fireball", "fire_ball", "shuriken", "rasengan", "chidori", "bunshin", "projectile", "dummy"
+            "isobu", "son_goku", "kokuo", "saiken", "choumei", "gyuki", "gyuuki", "toad", "sapo", "susanoo", "jutsu",
+            "katon", "suiton", "doton", "fuuton", "raiton", "mokuton", "fireball", "fire_ball", "shuriken",
+            "rasengan", "chidori", "dragon", "beam", "chakra", "summon", "clone", "bunshin", "projectile",
+            "dummy", "snake", "manda", "slug", "katsuyu", "wolf", "hawk", "crow", "tiger"
     };
 
-    /** So gigantes (bijuus, sapos enormes) e coisas minusculas (projeteis) ficam de fora pelo tamanho. */
-    private static final float MAX_NINJA_WIDTH = 1.6F;
-    private static final float MIN_NINJA_HEIGHT = 0.8F;
-    private static final float MAX_NINJA_HEIGHT = 3.2F;
+    /** Limite de tamanho de um ninja "normal" (tamanho de jogador). Bijuus e invocacoes gigantes ficam de fora. */
+    private static final float MAX_NINJA_WIDTH = 1.0F;
+    private static final float MIN_NINJA_HEIGHT = 1.2F;
+    private static final float MAX_NINJA_HEIGHT = 2.5F;
 
     /**
      * So os ninjas (NPCs humanoides) do Narutoto deixam corpo no chao.
@@ -61,6 +63,7 @@ public final class EdoTargets {
             if (path.contains(word)) return false;
         }
 
+        // Corpo de ninja = tamanho de gente. Gamabunta, Kurama e jutsus (pequenos ou enormes) saem por aqui.
         if (type.getWidth() > MAX_NINJA_WIDTH) return false;
         float h = type.getHeight();
         return h >= MIN_NINJA_HEIGHT && h <= MAX_NINJA_HEIGHT;
