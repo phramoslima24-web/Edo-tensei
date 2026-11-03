@@ -65,7 +65,7 @@ public final class ModRegistry {
 
     public static final RegistryObject<EntityType<CorpseEntity>> CORPSE = ENTITIES.register("corpse",
             () -> EntityType.Builder.<CorpseEntity>of(CorpseEntity::new, MobCategory.MISC)
-                    .sized(1.6F, 0.5F)
+                    .sized(1.8F, 0.5F)
                     .clientTrackingRange(8)
                     .updateInterval(20)
                     .build(new ResourceLocation(EdoTenseiAddon.MODID, "corpse").toString()));
