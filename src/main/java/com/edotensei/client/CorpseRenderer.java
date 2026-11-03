@@ -10,13 +10,14 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.ForgeRegistries;
 
-/** Desenha o mob original deitado no chao. */
+/** Desenha o ninja original caindo e ficando deitado no chao, de bruços ou de costas. */
 public class CorpseRenderer extends EntityRenderer<CorpseEntity> {
     private final Map<String, Entity> ghosts = new HashMap<>();
 
@@ -47,14 +48,16 @@ public class CorpseRenderer extends EntityRenderer<CorpseEntity> {
 
     @Override
     public void render(CorpseEntity corpse, float yaw, float partialTick, PoseStack pose, MultiBufferSource buffer, int light) {
-        // Durante o primeiro segundo o proprio mob ainda esta fazendo a animacao de morte.
-        if (corpse.tickCount < 20) return;
         Entity ghost = ghostFor(corpse.getEntityTypeId(), corpse.level());
         if (ghost == null) return;
 
         pose.pushPose();
         pose.mulPose(Axis.YP.rotationDegrees(-corpse.getYRot()));
-        pose.mulPose(Axis.ZP.rotationDegrees(90.0F));
+        // Cai de bruços (para frente) ou de costas (para trás); ao reaparecer já fica deitado.
+        float t = corpse.isSettled() ? 1.0F : Mth.clamp((corpse.tickCount + partialTick) / CorpseEntity.FALL_TICKS, 0.0F, 1.0F);
+        t = t * t * (3.0F - 2.0F * t);
+        pose.translate(0.0D, 0.22D * t, 0.0D); // o corpo fica apoiado no chão, não afundado
+        pose.mulPose(Axis.XP.rotationDegrees((corpse.isFaceDown() ? 90.0F : -90.0F) * t));
         try {
             Minecraft.getInstance().getEntityRenderDispatcher().render(ghost, 0.0D, 0.0D, 0.0D, 0.0F, 0.0F, pose, buffer, light);
         } catch (Throwable ignored) {

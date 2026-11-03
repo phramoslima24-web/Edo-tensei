@@ -19,7 +19,12 @@ import net.minecraftforge.network.NetworkHooks;
  */
 public class CorpseEntity extends Entity {
     private static final EntityDataAccessor<String> TYPE_ID = SynchedEntityData.defineId(CorpseEntity.class, EntityDataSerializers.STRING);
+    /** true = de bruços (cara no chão), false = de costas (cara para cima). */
+    private static final EntityDataAccessor<Boolean> FACE_DOWN = SynchedEntityData.defineId(CorpseEntity.class, EntityDataSerializers.BOOLEAN);
+    /** true depois que o corpo terminou de cair (o cliente so anima a queda enquanto for false). */
+    private static final EntityDataAccessor<Boolean> SETTLED = SynchedEntityData.defineId(CorpseEntity.class, EntityDataSerializers.BOOLEAN);
     public static final int LIFETIME = 20 * 60 * 10;
+    public static final int FALL_TICKS = 8;
 
     private boolean harvested;
     private int age;
@@ -30,12 +35,21 @@ public class CorpseEntity extends Entity {
 
     public void setup(String entityTypeId, float yRot) {
         this.entityData.set(TYPE_ID, entityTypeId);
+        this.entityData.set(FACE_DOWN, this.random.nextBoolean()); // sorteia: de bruços ou de costas
         this.setYRot(yRot);
         this.yRotO = yRot;
     }
 
     public String getEntityTypeId() {
         return this.entityData.get(TYPE_ID);
+    }
+
+    public boolean isFaceDown() {
+        return this.entityData.get(FACE_DOWN);
+    }
+
+    public boolean isSettled() {
+        return this.entityData.get(SETTLED);
     }
 
     public boolean isHarvested() {
@@ -49,6 +63,8 @@ public class CorpseEntity extends Entity {
     @Override
     protected void defineSynchedData() {
         this.entityData.define(TYPE_ID, "");
+        this.entityData.define(FACE_DOWN, true);
+        this.entityData.define(SETTLED, false);
     }
 
     @Override
@@ -60,8 +76,9 @@ public class CorpseEntity extends Entity {
         } else {
             this.setDeltaMovement(Vec3.ZERO);
         }
-        if (!level().isClientSide && ++age >= LIFETIME) {
-            this.discard();
+        if (!level().isClientSide) {
+            if (age >= FALL_TICKS && !isSettled()) this.entityData.set(SETTLED, true);
+            if (++age >= LIFETIME) this.discard();
         }
     }
 
@@ -75,6 +92,8 @@ public class CorpseEntity extends Entity {
         this.entityData.set(TYPE_ID, tag.getString("EntityType"));
         this.harvested = tag.getBoolean("Harvested");
         this.age = tag.getInt("Age");
+        this.entityData.set(FACE_DOWN, !tag.contains("FaceDown") || tag.getBoolean("FaceDown"));
+        this.entityData.set(SETTLED, tag.getInt("Age") >= FALL_TICKS);
     }
 
     @Override
@@ -82,6 +101,7 @@ public class CorpseEntity extends Entity {
         tag.putString("EntityType", getEntityTypeId());
         tag.putBoolean("Harvested", harvested);
         tag.putInt("Age", age);
+        tag.putBoolean("FaceDown", isFaceDown());
     }
 
     @Override
