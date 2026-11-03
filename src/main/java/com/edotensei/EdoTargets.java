@@ -67,6 +67,11 @@ public final class EdoTargets {
         return entity.getPersistentData().hasUUID(OWNER_TAG) ? entity.getPersistentData().getUUID(OWNER_TAG) : null;
     }
 
+    /** Foi revivido/invocado pelo Edo Tensei (tem dono)? Revividos nunca machucam outros revividos. */
+    public static boolean isRevived(@Nullable Entity entity) {
+        return entity != null && ownerOf(entity) != null;
+    }
+
     /** Invoca o mob de id "namespace:nome" no lugar indicado, obedecendo o jogador. */
     @Nullable
     public static Mob summon(ServerLevel level, String id, Vec3 at, float yRot, ServerPlayer owner) {

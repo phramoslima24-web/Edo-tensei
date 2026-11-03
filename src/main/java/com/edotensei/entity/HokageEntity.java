@@ -179,6 +179,7 @@ public class HokageEntity extends PathfinderMob {
     /** Pode ser atingido pelas habilidades? (nunca o invocador, nem os aliados dele, nem outros Hokages). */
     private boolean canHarm(LivingEntity e) {
         if (e == this || e instanceof HokageEntity || !e.isAlive()) return false;
+        if (owner != null && EdoTargets.isRevived(e)) return false; // sem fogo amigo entre revividos
         if (owner != null) {
             if (owner.equals(e.getUUID())) return false;
             if (owner.equals(EdoTargets.ownerOf(e))) return false;
@@ -567,6 +568,7 @@ public class HokageEntity extends PathfinderMob {
             if (candidate == owner || candidate == hokage) return false;
             if (candidate instanceof HokageEntity other && owner.getUUID().equals(other.getOwnerUUID())) return false;
             if (!candidate.isAlive()) return false;
+            if (EdoTargets.isRevived(candidate)) return false; // nunca mira em outro revivido
             if (!this.canAttack(candidate, TargetingConditions.DEFAULT)) return false;
             this.wanted = candidate;
             return true;

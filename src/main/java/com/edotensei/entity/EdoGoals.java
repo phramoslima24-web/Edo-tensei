@@ -93,7 +93,7 @@ public final class EdoGoals {
                 if (candidate == null || owner.tickCount - owner.getLastHurtMobTimestamp() > 200) return false;
             }
             if (candidate == owner || candidate == mob || !candidate.isAlive()) return false;
-            if (owner.getUUID().equals(EdoTargets.ownerOf(candidate))) return false; // aliados do mesmo invocador
+            if (EdoTargets.isRevived(candidate)) return false; // nunca mira em outro revivido
             if (!this.canAttack(candidate, TargetingConditions.DEFAULT)) return false;
             this.wanted = candidate;
             return true;

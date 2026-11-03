@@ -181,10 +181,15 @@ public final class ForgeEvents {
         UUID owner = EdoTargets.ownerOf(event.getEntity());
         if (owner != null && owner.equals(newTarget.getUUID())) {
             event.setCanceled(true);
+            return;
+        }
+        // Revividos nunca miram em outros revividos
+        if (EdoTargets.isRevived(event.getEntity()) && EdoTargets.isRevived(newTarget)) {
+            event.setCanceled(true);
         }
     }
 
-    /** Sem dano entre o invocador e suas criaturas. */
+    /** Sem dano entre o invocador e suas criaturas, e entre os proprios revividos. */
     @SubscribeEvent
     public static void onAttack(LivingAttackEvent event) {
         Entity attacker = event.getSource().getEntity();
@@ -192,6 +197,11 @@ public final class ForgeEvents {
         LivingEntity victim = event.getEntity();
         UUID attackerOwner = EdoTargets.ownerOf(attacker);
         UUID victimOwner = EdoTargets.ownerOf(victim);
+        // Sem fogo amigo: revivido nao machuca outro revivido
+        if (attackerOwner != null && victimOwner != null) {
+            event.setCanceled(true);
+            return;
+        }
         if ((attackerOwner != null && attackerOwner.equals(victim.getUUID()))
                 || (victimOwner != null && victimOwner.equals(attacker.getUUID()))) {
             event.setCanceled(true);
