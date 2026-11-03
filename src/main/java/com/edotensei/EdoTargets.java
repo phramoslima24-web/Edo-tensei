@@ -19,6 +19,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.Tags;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /** Regras de quem pode ser revivido pelo Edo Tensei e como invocar. */
@@ -31,14 +32,41 @@ public final class EdoTargets {
     private static final TagKey<EntityType<?>> NO_LIFE = TagKey.create(Registries.ENTITY_TYPE, new ResourceLocation("forge", "no_life"));
     private static final TagKey<EntityType<?>> CLONE = TagKey.create(Registries.ENTITY_TYPE, new ResourceLocation("forge", "clone"));
 
-    /** Mobs "de verdade" do Narutoto (NPCs, ninjas, bandidos, bijuus...). Ignora dummies, clones e projeteis. */
+    /** Pedacos de id que indicam jutsu, invocacao ou bijuu: nunca deixam corpo. */
+    private static final String[] NOT_NINJA_WORDS = {
+            "kurama", "gamabunta", "bunta", "gamakichi", "gamatatsu", "bijuu", "tailed", "shukaku", "matatabi",
+            "isobu", "son_goku", "kokuo", "saiken", "choumei", "gyuki", "gyuuki", "toad", "sapo", "susanoo", "jutsu",
+            "katon", "suiton", "doton", "fuuton", "raiton", "mokuton", "fireball", "fire_ball", "shuriken",
+            "rasengan", "chidori", "dragon", "beam", "chakra", "summon", "clone", "bunshin", "projectile",
+            "dummy", "snake", "manda", "slug", "katsuyu", "wolf", "hawk", "crow", "tiger"
+    };
+
+    /** Limite de tamanho de um ninja "normal" (tamanho de jogador). Bijuus e invocacoes gigantes ficam de fora. */
+    private static final float MAX_NINJA_WIDTH = 1.0F;
+    private static final float MIN_NINJA_HEIGHT = 1.2F;
+    private static final float MAX_NINJA_HEIGHT = 2.5F;
+
+    /**
+     * So os ninjas (NPCs humanoides) do Narutoto deixam corpo no chao.
+     * Jutsus, bijuus (Kurama...), invocacoes (Gamabunta...), dummies, clones e projeteis NAO deixam.
+     */
     public static boolean isRevivable(Entity entity) {
         if (!(entity instanceof Mob) || entity instanceof HokageEntity) return false;
         EntityType<?> type = entity.getType();
         ResourceLocation key = ForgeRegistries.ENTITY_TYPES.getKey(type);
         if (key == null || !key.getNamespace().equals("narutoto")) return false;
         if (type.getCategory() == MobCategory.MISC) return false;
-        return !type.is(NO_LIFE) && !type.is(CLONE);
+        if (type.is(NO_LIFE) || type.is(CLONE) || type.is(Tags.EntityTypes.BOSSES)) return false;
+
+        String path = key.getPath().toLowerCase(java.util.Locale.ROOT);
+        for (String word : NOT_NINJA_WORDS) {
+            if (path.contains(word)) return false;
+        }
+
+        // Corpo de ninja = tamanho de gente. Gamabunta, Kurama e jutsus (pequenos ou enormes) saem por aqui.
+        if (type.getWidth() > MAX_NINJA_WIDTH) return false;
+        float h = type.getHeight();
+        return h >= MIN_NINJA_HEIGHT && h <= MAX_NINJA_HEIGHT;
     }
 
     /** Item de outro mod pelo id (ex.: "narutoto_mangekyou:mangekyou_madara"). Vazio se o mod nao estiver instalado. */
